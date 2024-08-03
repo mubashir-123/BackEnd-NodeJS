@@ -1,0 +1,1 @@
+export const DB_NNAME = 'Mubashir_Backend_NodeJS'
