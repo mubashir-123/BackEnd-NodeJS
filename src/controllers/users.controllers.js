@@ -4,7 +4,7 @@ import { User } from "../models/user.models.js";
 import { uploadonCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../ApiResponse.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { upload } from "../middlewares/multer.middleware.js";
+// import { upload } from "../middlewares/multer.middleware.js";
 import { v2 as cloudinary } from "cloudinary";
 
 const generateAccessAndRefreshToken = async (userId) => {

@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { uploadonCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../ApiResponse.js";
+import { v2 as cloudinary } from "cloudinary";
 
  const getAllProducts =asyncHandler( async (req, res) => {
     
@@ -82,14 +83,16 @@ import { ApiResponse } from "../ApiResponse.js";
  const updateProduct = asyncHandler( async (req, res) => {
 
    const { productName, price, color, stock, shortDescription } = req.body;
+   console.log(req.body);
 
-     if(!productName || !price || !color || !stock || !shortDescription){
-         throw new ApiError(400,"All field are required")
-     }   
+    //  if(productName || price || color || stock || shortDescription){
+    //        new ApiResponse(200,"Data is accpeted by the function update product")
+    // }   
+    console.log(productName,price,color,stock,shortDescription)
 
         const updatedProduct = await Products.findByIdAndUpdate(    
             //  req.Products._id,
-             req.params._id,
+             req.params.id,
              {
                 productName,
                 price, 
@@ -102,10 +105,10 @@ import { ApiResponse } from "../ApiResponse.js";
         if (!updatedProduct){ 
             throw new ApiError(404,"Error while updating product")
         }
-        res.status(200).json(updatedProduct);
+        // res.status(200).json(updatedProduct);
      return res
             .status(200)
-            .json(new ApiResponse(200,updateProduct,"The product has been updated successfully"))
+            .json(new ApiResponse(200,updatedProduct,"The product has been updated successfully"))
 });
 
 
@@ -117,8 +120,9 @@ import { ApiResponse } from "../ApiResponse.js";
             throw new ApiError(400,"Error while deletting the product")
         }
         
-        return res.status(200)
-              .json(new ApiResponse(200,deleteProduct,"Product has been deleted successfully"));
+        return res
+        .status(200)
+        .json(new ApiResponse(200,deleteProduct,"Product has been deleted successfully"));
 };
 
 const updateProductImage = asyncHandler(async(req,res) => {
@@ -128,17 +132,27 @@ const updateProductImage = asyncHandler(async(req,res) => {
         throw new ApiError(400,"Product image file is missing")
     }
 
-    const imageProduct = uploadonCloudinary(productImageLocalPath);
+       // Fetch the product to get the current userProductImage public_id
+  const userProductImage = await Products.findById(req.params.id);
+
+  if (userProductImage.productImagePublicId) {
+    // Delete the old avatar from Cloudinary
+    const oldPublicId = userProductImage.productImagePublicId;
+    await cloudinary.uploader.destroy(oldPublicId);
+  }
+
+    const imageProduct = await uploadonCloudinary(productImageLocalPath);
 
     if(!imageProduct.url){
         throw new ApiError(400,"Error while uploading on product image")
     }
 
    const productImage = await Products.findByIdAndUpdate(
-        req.productImage?._id,
+        req.params.id,
         {
           $set:{
-            productImage: productImage.path
+            productImage: imageProduct.url,                      // Update the avatar URL
+            productImagePublicId: imageProduct.public_id        // Update the public_id
           }
         },
         {
@@ -148,7 +162,7 @@ const updateProductImage = asyncHandler(async(req,res) => {
     
     return res
     .status(200)
-    .json(200,user,"Product image is updated successfully")
+    .json(new ApiResponse(200,productImage,"Product image is updated successfully"))
 })
 
 
