@@ -122,7 +122,7 @@ import { v2 as cloudinary } from "cloudinary";
         
         return res
         .status(200)
-        .json(new ApiResponse(200,deleteProduct,"Product has been deleted successfully"));
+        .json(new ApiResponse(200,deletedProduct,"Product has been deleted successfully"));
 };
 
 const updateProductImage = asyncHandler(async(req,res) => {
