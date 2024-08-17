@@ -25,8 +25,11 @@ const addCheckout = asyncHandler(async(req,res) => {
 })
 
 const getCheckoutUser = asyncHandler(async(req,res) => {
-    const checkout = req.body;
-    return res.json(new ApiResponse(200,checkout,"Checkout data render successfully"))
+    const checkoutdetails = await checkout.find();
+    if(!checkoutdetails) {
+        throw new ApiError(500,"Cannot find the products")
+    }
+    return res.json(new ApiResponse(200,checkoutdetails,"Checkout data render successfully"))
 })
 
 export {addCheckout, getCheckoutUser}
