@@ -18,8 +18,12 @@ app.use(cookieParser());
 
 //import routes
 import userRouter from "./routes/users.routes.js";
+import productRouter from "./routes/products.routes.js"
+import checkoutRouter from "./routes/checkout.routes.js"
 
 //route decleration
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/products", productRouter);
+app.use("/api/v1/checkout", checkoutRouter);
 
 export { app };
