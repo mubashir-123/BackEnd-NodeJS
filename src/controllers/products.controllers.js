@@ -166,6 +166,20 @@ const updateProductImage = asyncHandler(async(req,res) => {
     .json(new ApiResponse(200,productImage,"Product image is updated successfully"))
 })
 
+const getProductsByCategory = asyncHandler(async (req, res) => {
+    const category = req.params.category;
+  
+    const products = await Products.find({ category });
+    if (products.length === 0) {
+      throw new ApiError(404, "No products found for this category");
+    }
+  
+    return res
+      .status(200)
+      .json(new ApiResponse(200, products, `Products in category: ${category}`));
+  });
+  
+
 
 export {
     getAllProducts,
@@ -173,6 +187,7 @@ export {
     addProduct,
     updateProduct,
     deleteProduct,
-    updateProductImage
+    updateProductImage,
+    getProductsByCategory
 };
 

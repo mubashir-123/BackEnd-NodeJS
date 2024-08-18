@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js";
 // import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { getAllProducts, getProductById, addProduct, updateProduct, deleteProduct,updateProductImage } from '../controllers/products.controllers.js';
+import { getAllProducts, getProductById, addProduct, updateProduct, deleteProduct,updateProductImage, getProductsByCategory } from '../controllers/products.controllers.js';
 
 const router = Router()
 
@@ -13,6 +13,10 @@ router.route("/add-products").post(upload.fields([{name: "productImage",maxCount
 router.route("/update-products/:id").patch(updateProduct);
 router.route("/update-productImage/:id").patch(upload.single("productImage"),updateProductImage)
 
+router.route("/category/:category").get(getProductsByCategory);
+
+
 router.route("/delete-product/:id").delete(deleteProduct);
+
 
 export default router;
