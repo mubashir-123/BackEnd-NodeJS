@@ -31,10 +31,10 @@ import { v2 as cloudinary } from "cloudinary";
 });
 
  const addProduct = asyncHandler( async (req, res) => {
-    const { productName, price, color, stock, shortDescription } = req.body;
+    const { productName, price, color, stock, shortDescription,  category  } = req.body;
 
     if (
-        [productName, price, color, stock, shortDescription].some((field) => field?.trim() === "")
+        [productName, price, color, stock, shortDescription,  category ].some((field) => field?.trim() === "")
       ) {
         throw new ApiError(400, "All fields are required");
       }
@@ -66,7 +66,8 @@ import { v2 as cloudinary } from "cloudinary";
         stock,
         productImage: imageProduct.url,
         productImagePublicId: imageProduct.public_id,
-        shortDescription
+        shortDescription,
+        category 
     });
 
         const savedProduct = await newProduct.save({validateBeforeSave: false});

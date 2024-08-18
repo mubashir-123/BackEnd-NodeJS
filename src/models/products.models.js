@@ -1,5 +1,7 @@
 import { Schema } from "mongoose";
 import mongoose from "mongoose";
+import { type } from "os";
+import { Category } from "./category.models";
 
 const productSchema = new Schema(
     {
@@ -13,7 +15,7 @@ const productSchema = new Schema(
         price:{
             type: Number,
             required: true,
-            lowercase: true,
+            default: 0,
             trim: true
         },
         color:{
@@ -25,7 +27,7 @@ const productSchema = new Schema(
         stock:{
             type: Number,
             required: true,
-            lowercase: true,
+            default: 0,
             trim: true
         },
         productImage:{
@@ -39,7 +41,12 @@ const productSchema = new Schema(
         shortDescription:{
              type: String,
              lowercase: true
-        }
+        },
+        category: {
+            type: String,
+            required: true,
+            trim: true,
+          },
     },
     {
         timestamps: true
