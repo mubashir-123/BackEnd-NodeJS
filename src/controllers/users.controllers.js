@@ -6,6 +6,8 @@ import { ApiResponse } from "../ApiResponse.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 // import { upload } from "../middlewares/multer.middleware.js";
 import { v2 as cloudinary } from "cloudinary";
+// import { generateOTP } from "../utils/otp.js";
+import { sendOTP } from "../utils/mailer.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
     try{
@@ -20,6 +22,59 @@ const generateAccessAndRefreshToken = async (userId) => {
          throw new ApiError(500, "Something went wrong while generating access and refresh token")
     }
 }
+
+const verifyOTP = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+  
+    const user = await User.findOne({ email });
+  
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+  
+    if (user.isEmailVerified) {
+      return res.status(200).json(
+        new ApiResponse(200, {}, "Email is already verified")
+      );
+    }
+  
+    if (user.otp !== otp) {
+      throw new ApiError(400, "Invalid OTP");
+    }
+  
+    if (user.otpExpires < Date.now()) {
+      const { otp, otpExpires } = generateOTP();
+      user.otp = otp;
+      user.otpExpires = otpExpires;
+      await user.save({ validateBeforeSave: false });
+      await sendOTP(user.email, otp);
+      throw new ApiError(400, "OTP expired. A new OTP has been sent to your email.");
+    }
+  
+    user.isEmailVerified = true;
+    user.otp = undefined;  // Clear OTP
+    user.otpExpires = undefined; // Clear OTP expiration
+    await user.save({ validateBeforeSave: false });
+  
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+  
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+  
+    return res.status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(
+        new ApiResponse(
+          200,
+          { accessToken, refreshToken },
+          "Email verified successfully"
+        )
+      );
+  });
+  
 
 const registerUser = asyncHandler(async (req, res) => {
   //Get user dtails from FrontEnd
@@ -48,7 +103,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409,"User with email or username is already exist")
   }
    
-    const avatarLocalPath = req.files?.avatar[0]?.path;
+    // const avatarLocalPath = req.files?.avatar[0]?.path;
 
     let coverImageLocalPath;
     if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
@@ -57,19 +112,19 @@ const registerUser = asyncHandler(async (req, res) => {
     
     // const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
-    if(!avatarLocalPath){
-        throw new ApiError(400,"Avatar file is required");
-    }
+    // if(!avatarLocalPath){
+    //     throw new ApiError(400,"Avatar file is required");
+    // }
 
-    const avatar = await uploadonCloudinary(avatarLocalPath);
+    // const avatar = await uploadonCloudinary(avatarLocalPath);
     // console.log(avatar);
     const coverImage = await uploadonCloudinary(coverImageLocalPath);
     // console.log(coverImage); 
 
     const user = await User.create({
         fullname,
-        avatar: avatar.url,
-        avatarPublicId: avatar.public_id,
+        // avatar: avatar.url,
+        // avatarPublicId: avatar.public_id,
         coverImage: coverImage?.url || "",
         coverImagePublicId: coverImage?.public_id || "",
         email,
@@ -84,9 +139,15 @@ const registerUser = asyncHandler(async (req, res) => {
     if(!createUser){
         throw new ApiError(400,"something went wrong while creating the user");
     }
+
+    // Generate OTP and send it via email
+  const otp = user.generateOTP();
+  await user.save();
+  await sendOTPEmail(user.email, otp);
+
     
     return res.status(201).json(
-        new ApiResponse(200,createUser,"User registered successfully")
+        new ApiResponse(200,{createUser, opt},"User registered successfully")
     )
 });
 
@@ -127,6 +188,15 @@ const loginUser = asyncHandler(async (req,res) => {
          secure: true
     }
 
+    // Generate and send OTP
+  const { otp, otpExpires } = generateOTP();
+  user.otp = otp;
+  user.otpExpires = otpExpires;
+  await user.save({ validateBeforeSave: false });
+
+  await sendOTP(User.email, otp);
+
+
     return res.status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
@@ -134,7 +204,7 @@ const loginUser = asyncHandler(async (req,res) => {
         new ApiResponse(
             200,
             {
-                user: loggedInUser, accessToken, refreshToken
+                user: loggedInUser, accessToken, refreshToken,
             },
             "User logged in successfully"
         )
@@ -344,4 +414,26 @@ const updatecoverImage = asyncHandler(async(req,res) => {
     .json(new ApiResponse(200,user,"Cover image is updated successfully"))
 })
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateAvatar, updatecoverImage  };
+
+
+// // Utility function to send OTP email
+// const sendOTPEmail = async (email, otp) => {
+//     const transporter = nodemailer.createTransport({
+//       service: 'Gmail',
+//       auth: {
+//         user: process.env.EMAIL,
+//         pass: process.env.EMAIL_PASSWORD,
+//       },
+//     });
+  
+//     const mailOptions = {
+//       from: process.env.EMAIL,
+//       to: user.email,
+//       subject: 'Your OTP Code',
+//       text: `Your OTP code is ${otp}. It will expire in 1 minute.`,
+//     };
+  
+//     await transporter.sendMail(mailOptions);
+  // };
+
+export { verifyOTP, registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateAvatar, updatecoverImage  };

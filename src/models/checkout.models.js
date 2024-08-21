@@ -3,33 +3,80 @@ import mongoose from "mongoose";
 
 const checkoutSchema = new Schema(
     {
-      Name:{
+      name:{
         type: String,
         required: true,
         lowercase: true,
         trim: true,
         index: true,
       },
-      PhoneNumber: {
+      phone: {
         type: Number,
         required: true,
         lowercase: true,
         trim: true,
         index: true,
       },
-        Address:{
+        address:{
           type: String,
           required: true,
           lowercase: true,
           trim: true,
           index: true,
       },
-       City:{
+       city:{
           type: String,
           required: true,
           lowercase: true,
           trim: true,
           index: true,
+       },
+       productName:{
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true,
+        index: true,
+     },
+     description:{
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+      index: true,
+   },
+   price:{
+    type: Number,
+    required: true,
+    lowercase: true,
+    trim: true,
+    index: true,
+ },
+       quantity:{
+          type: String,
+          lowercase: true,
+          trim: true,
+          index: true,
+       },
+       category:{
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true,
+        index: true,
+     },
+     size:{
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+      index: true,
+   },
+       color: {
+        type: String,
+        lowercase: true,
+        trim: true,
+        index: true,
        },
     },
     {

@@ -31,10 +31,10 @@ import { v2 as cloudinary } from "cloudinary";
 });
 
  const addProduct = asyncHandler( async (req, res) => {
-    const { productName, price, color, stock, shortDescription,  category  } = req.body;
+    const { productName, price, color, stock, shortDescription,category  } = req.body;
 
     if (
-        [productName, price, color, stock, shortDescription,  category ].some((field) => field?.trim() === "")
+        [productName, price, color, stock, shortDescription, category ].some((field) => field?.trim() === "")
       ) {
         throw new ApiError(400, "All fields are required");
       }

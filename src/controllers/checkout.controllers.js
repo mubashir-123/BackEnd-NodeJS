@@ -4,13 +4,21 @@ import { ApiResponse } from "../ApiResponse.js";
 import { checkout } from "../models/checkout.models.js";
 
 const addCheckout = asyncHandler(async(req,res) => {
-    const { Name,PhoneNumber, Address, City } = req.body;
+    const { name,phone, address, city, color,productName,description,price,quantity,category,size } = req.body;
+
 
     const createCheckout = await checkout.create({
-        Name,
-        PhoneNumber,
-        Address,
-        City
+        name: name,
+        phone: phone,
+        address: address,
+        city: city,
+        color: color,
+        productName: productName,
+        description:description,
+        price: price,
+        quantity: quantity,
+        category:category,
+        size: size,
         })
         
         const savedCheckout = await createCheckout.save({validateBeforeSave: false});

@@ -18,7 +18,6 @@ const productSchema = new Schema(
         },
         color:{
             type: String,
-            required: true,
             lowercase: true,
             trim: true
         },
@@ -42,7 +41,6 @@ const productSchema = new Schema(
         },
         category: {
             type: String,
-            required: true,
             trim: true,
           },
     },

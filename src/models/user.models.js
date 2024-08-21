@@ -2,7 +2,6 @@ import { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
-import { type } from "os";
 
 const userSchema = new Schema(
   {
@@ -29,11 +28,10 @@ const userSchema = new Schema(
     },
     avatar: {
       type: String, // Cloudinary URL
-      required: true,
     },
     avatarPublicId: {
       type: String, // Cloudinary public ID
-      required: true,
+      // required: true,
     },
     coverImage: {
       type: String,
@@ -55,11 +53,30 @@ const userSchema = new Schema(
     refereshToken: {
       type: String,
     },
+    otp: {
+      type: String,
+    },
+    otpExpires: {
+      type: Date,
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+import crypto from 'crypto';
+
+export const generateOTP = () => {
+  const otp = crypto.randomInt(1000, 9999).toString(); // 4-digit OTP
+  const otpExpires = Date.now() + 60 * 1000; // Expires in 1 minute
+  return { otp, otpExpires };
+};
+
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next;
